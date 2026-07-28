@@ -164,17 +164,17 @@ interface IERC20 {
 
 contract DeMISROConsensusPool {
     struct MerchantProfile {
-        uint256 totalVolume;
-        uint256 totalChargebacks;
-        uint256 activeRiskTier;
-        uint256 dynamicRate;
+        uint256 totalVol;
+        uint256 totalChb;
+        uint256 riskTier;
+        uint256 dynRate;
         uint256 totalContributed;
-        uint256 claimsPaidThisYear;
+        uint256 claimsPaid;
     }
 
     struct EmergencyProposal {
-        bytes32 targetMerchantId;
-        uint256 voteCount;
+        bytes32 targetMid;
+        uint256 voteCnt;
         uint256 timestamp;
         bool executed;
         mapping(address => bool) hasVoted;
@@ -201,7 +201,7 @@ contract DeMISROConsensusPool {
     mapping(bytes32 => bool) public batches;
     mapping(uint256 => EmergencyProposal)
         public proposals;
-    uint256 public propCounter;
+    uint256 public propCnt;
 
     event EmbAuth(address indexed emb, bool st);
     event BatchProc(
@@ -282,15 +282,15 @@ contract DeMISROConsensusPool {
         bytes32 _mid
     ) external onlyNode returns (uint256) {
         require(frozen, "!frozen");
-        propCounter++;
+        propCnt++;
         EmergencyProposal storage p =
-            proposals[propCounter];
-        p.targetMerchantId = _mid;
-        p.voteCount = 1;
+            proposals[propCnt];
+        p.targetMid = _mid;
+        p.voteCnt = 1;
         p.timestamp = block.timestamp;
         p.hasVoted[msg.sender] = true;
-        emit PropInit(propCounter, _mid);
-        return propCounter;
+        emit PropInit(propCnt, _mid);
+        return propCnt;
     }
 
     function voteRescue(
@@ -307,13 +307,13 @@ contract DeMISROConsensusPool {
             "exp"
         );
         p.hasVoted[msg.sender] = true;
-        p.voteCount++;
-        if (p.voteCount >= threshold) {
+        p.voteCnt++;
+        if (p.voteCnt >= threshold) {
             p.executed = true;
             frozen = false;
             monthlyClaims = 0;
             lastReset = block.timestamp;
-            emit Resume(_pid, p.voteCount);
+            emit Resume(_pid, p.voteCnt);
         }
     }
 
@@ -327,27 +327,27 @@ contract DeMISROConsensusPool {
         require(_mid != bytes32(0), "!mid");
         MerchantProfile storage m =
             merchants[_mid];
-        m.totalVolume += _vol;
-        m.totalChargebacks += _chb;
-        if (m.totalVolume > 0) {
+        m.totalVol += _vol;
+        m.totalChb += _chb;
+        if (m.totalVol > 0) {
             uint256 r =
-                (m.totalChargebacks * 10000)
-                / m.totalVolume;
+                (m.totalChb * 10000)
+                / m.totalVol;
             if (r > 100) {
-                m.activeRiskTier = 3;
-                m.dynamicRate = BASE_RATE * 3;
+                m.riskTier = 3;
+                m.dynRate = BASE_RATE * 3;
             } else if (r > 20) {
-                m.activeRiskTier = 2;
-                m.dynamicRate = BASE_RATE * 2;
+                m.riskTier = 2;
+                m.dynRate = BASE_RATE * 2;
             } else {
-                m.activeRiskTier = 1;
-                m.dynamicRate = BASE_RATE;
+                m.riskTier = 1;
+                m.dynRate = BASE_RATE;
             }
         } else {
-            m.dynamicRate = BASE_RATE;
+            m.dynRate = BASE_RATE;
         }
         uint256 contrib =
-            (_vol * m.dynamicRate) / 10000;
+            (_vol * m.dynRate) / 10000;
         batches[_root] = true;
         if (contrib > 0) {
             uint256 alw =
@@ -384,7 +384,7 @@ contract DeMISROConsensusPool {
             merchants[_mid];
         uint256 lim = m.totalContributed * 2;
         require(
-            m.claimsPaidThisYear + _amt <= lim,
+            m.claimsPaid + _amt <= lim,
             "!lim"
         );
         uint256 stop =
@@ -394,7 +394,7 @@ contract DeMISROConsensusPool {
             emit Emergency("stop-loss");
             revert("!stop");
         }
-        m.claimsPaidThisYear += _amt;
+        m.claimsPaid += _amt;
         monthlyClaims += _amt;
         require(totalReserves >= _amt, "!res");
         totalReserves -= _amt;
