@@ -1,18 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE rfc SYSTEM "rfc2629.dtd">
-<rfc category="bcp"
+<rfc xmlns:xi="http://www.w3.org/2001/XInclude"
      docName="draft-shubralov-demi-sro-payment-security-00"
      ipr="trust200902"
-     submissionType="IETF"
+     submissionType="independent"
      xml:lang="en"
      version="3">
   
   <front>
     <title abbrev="DeMI SRO Payment Security">Blockchain-Backed Risk Pooling and Self-Regulation Protocol for Alternative Payment Providers (DeMI)</title>
-    <seriesInfo name="Internet-Draft" value="draft-shubralov-demi-sro-payment-security-00"/>
     <date year="2026" month="07" day="28"/>
-    <area>Security</area>
-    <workgroup>sec</workgroup>
+    <area>SEC</area>
     <keyword>payment</keyword>
     <keyword>blockchain</keyword>
     <keyword>sro</keyword>
@@ -410,7 +407,7 @@ graph TD
       </section>
       
       <section title="Institutional Staking and Compliance Standards">
-        <t>Operating public-facing validators within an enterprise financial контур requires strict compliance with recent institutional blockchain frameworks. Embassy Nodes SHOULD adhere to the guidelines established by major institutional Ethereum initiatives and working groups focused on corporate node validation:</t>
+        <t>Operating public-facing validators within an enterprise financial contour requires strict compliance with recent institutional blockchain frameworks. Embassy Nodes SHOULD adhere to the guidelines established by major institutional Ethereum initiatives and working groups focused on corporate node validation:</t>
         
         <ul>
           <li><t><strong>Enterprise Ethereum Alliance (EEA) Standards:</strong> Node operators MUST implement the EEA Enterprise Architecture specifications regarding node access control, permissioned network routing over MPLS, and zero-knowledge evidence auditing for local central banks.</t></li>
