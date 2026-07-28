@@ -3,7 +3,7 @@
      xmlns="http://purl.org/net/rfc7999"
      docName="draft-shubralov-demi-sro-payment-security-00"
      ipr="trust200902"
-     submissionType="IETF"
+     submissionType="independent"
      xml:lang="en"
      version="3">
   
@@ -18,7 +18,6 @@
     </author>
     <date year="2026" month="07" day="28"/>
     <area>Security</area>
-    <workgroup>Independent Submission</workgroup>
     <keyword>payment</keyword>
     <keyword>blockchain</keyword>
     <keyword>sro</keyword>
