@@ -249,6 +249,53 @@ To eliminate the risk of a "slashing event" (accidental double-signing of blocks
 ## Mempool Shielding and Front-Running Mitigation
 Public mempools expose institutional transactions to MEV bots that execute front-running or sandwich attacks, causing slippage and artificial cost hikes. Embassy Nodes MUST route all transaction blocks through private block production relays (e.g., Flashbots MEV-Boost) rather than standard public broadcasting. This ensures that data updates and settlement allocations pass directly to trusted mining pools, remaining invisible until they are mined into an immutable block.
 
+# Embassy Node Validator Implementation and Institutional Guidelines
+
+To ensure deterministic transaction inclusion, maximum protocol uptime, and absolute isolation from public network vulnerabilities, Embassy Nodes SHOULD implement a unified, vertically integrated validation and API routing stack.
+
+## Vertical Validator-API Integration Architecture
+
+Traditional blockchain interactions rely on third-party RPC providers (e.g., Infura, Alchemy), which introduces latency and vector risks such as man-in-the-middle (MITM) attacks and MEV front-running. Each DeMI SRO National Embassy Node MUST operate its own execution client, consensus client, and an attached internal validator infrastructure.
+
++-------------------------------------------------------------+
+|               Embassy Node Secure Perimeter                 |
+|                                                             |
+|  +-----------------+           +-------------------------+  |
+|  | Payment Engine  | --mTLS--> |  Private RPC / API Gate |  |
+|  +-----------------+           +-------------------------+  |
+|                                             |               |
+|                                   Internal Interlock        |
+|                                             v               |
+|  +-----------------+           +-------------------------+  |
+|  | Consensus Layer | <-------  |    Execution Engine     |  |
+|  | (Lighthouse)    |           |  (Geth/Nethermind RPC)  |  |
+|  +-----------------+           +-------------------------+  |
+|          |                                                  |
++----------|--------------------------------------------------+
+           v
+   +---------------+
+   | Ethereum L1   |
+   | Public Network|
+   +---------------+
+
+1. **Direct Execution Interlock:** When the Web2 API gateway receives an Epoch Batch via `POST /api/v1/epoch/submit`, it MUST sign the transaction using the APP's institutional hot wallet and broadcast it directly to the node's local Execution Engine (Geth or Nethermind) via an internal IPC socket, completely bypassing the public internet.
+2. **Validator Priority Injection:** The local Consensus Client (Lighthouse or Prysm) MUST be configured to prioritize blocks containing transactions originated from the node’s own private RPC endpoint. When the Embassy Node's validator is selected as the slot proposer on Ethereum L1, it MUST inject the queued DeMI SRO transactions at the top of the block execution payload, reducing inclusion latency to zero.
+
+## Institutional Staking and Compliance Standards
+
+Operating public-facing validators within an enterprise financial контур requires strict compliance with recent institutional blockchain frameworks. Embassy Nodes SHOULD adhere to the guidelines established by major institutional Ethereum initiatives and working groups focused on corporate node validation:
+
+* **Enterprise Ethereum Alliance (EEA) Standards:** Node operators MUST implement the EEA Enterprise Architecture specifications regarding node access control, permissioned network routing over MPLS, and zero-knowledge evidence auditing for local central banks.
+* **Institutional Liquid Staking & Validator Frameworks:** For financial risk mitigation, nodes SHOULD utilize distributed validator technology (DVT) frameworks (such as Obol Network or SSV Network). DVT allows an Embassy Node’s 32 ETH validation key to be split into multi-signature shares distributed securely between the sub-nodes of India, Pakistan, and Vietnam. This guarantees that if one physical data center goes offline, the remaining "embassies" can cooperatively sign blocks, preventing slashing penalties and maintaining continuous transaction ledgering.
+* **Compliance and Sanction Filtering at the RPC Layer:** While the smart contract logic is immutable and extraterritorial ("Code is Law"), national Embassy Nodes MAY configure their private RPC layer to comply with local financial intelligence regulations (e.g., FIU-IND in India) by cross-referencing merchant wallet addresses against official local blocklists before broadcast.
+
+## Automated GAS Fee Rebate Loop
+
+As specified in the protocol economics, all gas rewards earned by the validator (specifically the Priority Fee and block tips via MEV-Boost) for processing DeMI batches MUST be programmatically funneled back to the smart contract’s treasury. 
+
+The node handler script MUST monitor on-chain events and execute a quarterly rebalancing transaction, moving accumulated validation rewards from the validator's withdrawal address back into the `DeMISROCompensationPool` balance, thereby lowering the net operational costs of the alternative providers to near-zero levels.
+
+
 ## IANA Considerations
 This document requires no registry assignments or interventions from IANA.
 
