@@ -72,7 +72,7 @@ The compensation pool and risk management ledger MUST implement the following sm
 
 ```solidity
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.20;
+pragma solidity ^0.8.24;
 
 interface IERC20 {
     function transferFrom(address from, address to, uint256 amount) external returns (bool);
@@ -81,59 +81,188 @@ interface IERC20 {
     function allowance(address owner, address spender) external view returns (uint256);
 }
 
-contract DeMISROCompensationPool {
-    address public admin;
-    IERC20 public settlementToken; // Typically USDC or USDT
-
+/**
+ * @title DeMISROConsensusPool
+ * @author Evgeny A. Shubralov (DeMI-SRO Consortium)
+ * @notice Управляющий смарт-контракт децентрализованного фонда Блокчейн-СРО.
+ * Архитектура исключает single point of failure через механизмы M-of-N консенсуса.
+ */
+contract DeMISROConsensusPool {
+    
     struct MerchantProfile {
         uint256 totalVolume;
         uint256 totalChargebacks;
-        uint256 activeRiskTier; // 1 = Low, 2 = Medium, 3 = High
-        uint256 dynamicRate;     // In basis points (1 bp = 0.01%)
+        uint256 activeRiskTier; 
+        uint256 dynamicRate;     
+        uint256 totalContributed;
+        uint256 claimsPaidThisYear;
     }
 
+    struct EmergencyProposal {
+        bytes32 targetMerchantId;
+        uint256 voteCount;
+        uint256 timestamp;
+        bool executed;
+        mapping(address => bool) hasVoted;
+    }
+
+    // --- КОНСТАНТЫ И ЛИМИТЫ (RISK CAPPING) ---
+    uint256 public constant BASE_RATE = 30;         
+    uint256 public constant MAX_CLAIM_LIMIT = 500 * 10**6; 
+    uint256 public constant SYSTEM_STOP_LOSS_PCT = 40;     
+
+    // --- СОСТОЯНИЕ КОНТРАКТА ---
+    IERC20 public immutable settlementToken;       
+    uint256 public totalPoolReserves;              
+    uint256 public monthlyClaimsPaid;             
+    uint256 public lastResetTimestamp;             
+    bool public isSystemFrozen;                    
+
+    // Настройки M-of-N Мультиподписи для административного контура
+    address[] public sroGovernors;
+    mapping(address => bool) public isGovernor;
+    uint256 public immutable requiredConsensusThreshold; // Количество голосов для утверждения (M)
+
+    mapping(address => bool) public authorizedEmbassies;
     mapping(bytes32 => MerchantProfile) public merchants;
     mapping(bytes32 => bool) public processedBatches;
+    
+    // Реестр предложений по консенсусному восстановлению (Бизнес-контур без админа)
+    mapping(uint256 => EmergencyProposal) public emergencyProposals;
+    uint256 public proposalCounter;
 
-    uint256 public constant BASE_RATE = 30; // 0.3% base contribution
-    uint256 public constant MAX_CLAIM_LIMIT = 500 * 10**6; // $500 per single claim max
+    // --- СОБЫТИЯ ---
+    event EmbassyAuthorized(address indexed embassy, bool status);
+    event BatchProcessed(bytes32 indexed merchantId, bytes32 indexed batchRoot, uint256 contribution);
+    event ClaimSettled(bytes32 indexed merchantId, uint256 amount, address indexed recipient);
+    event ValidatorRebateReceived(address indexed validator, uint256 amount);
+    event SystemEmergencyTriggered(string reason);
+    event SystemConsensusResumed(uint256 indexed proposalId, uint256 totalVotes);
+    event ProposalInitiated(uint256 indexed proposalId, bytes32 indexed merchantId);
 
-    event BatchProcessed(bytes32 indexed batchRoot, uint256 totalPoolContribution);
-    event ClaimSettled(bytes32 indexed merchantId, uint256 amountPaidOut);
-
-    modifier onlyAdmin() {
-        require(msg.sender == admin, "Auth: Caller is not admin");
+    // --- МОДИФИКАТОРЫ ДОСТУПА ---
+    modifier onlyGovernor() {
+        require(isGovernor[msg.sender], "Auth: Caller is not an authorized SRO Governor");
         _;
     }
 
-    constructor(address _token) {
-        admin = msg.sender;
-        settlementToken = IERC20(_token);
+    modifier onlyAuthorizedNode() {
+        require(authorizedEmbassies[msg.sender] || isGovernor[msg.sender], "Auth: Node unauthorized");
+        _;
     }
+
+    modifier whenNotFrozen() {
+        require(!isSystemFrozen, "Emergency: Pool is frozen due to Stop-Loss breach");
+        _;
+    }
+
+    // --- КОНСТРУКТОР ---
+    /**
+     * @notice При инициализации передается массив адресов Учредителей/Посольств и порог консенсуса.
+     * Например: [_founder1, _founder2, _embassyIndia], порог = 2 подписи.
+     */
+    constructor(address _settlementToken, address[] memory _initialGovernors, uint256 _threshold) {
+        require(_settlementToken != address(0), "Config: Invalid token address");
+        require(_initialGovernors.length >= _threshold, "Config: Threshold exceeds governors count");
+        require(_threshold > 0, "Config: Invalid threshold");
+
+        settlementToken = IERC20(_settlementToken);
+        requiredConsensusThreshold = _threshold;
+        lastResetTimestamp = block.timestamp;
+
+        for (uint256 i = 0; i < _initialGovernors.length; i++) {
+            address gov = _initialGovernors[i];
+            require(gov != address(0), "Config: Invalid governor address");
+            require(!isGovernor[gov], "Config: Duplicate governor");
+            
+            isGovernor[gov] = true;
+            sroGovernors.push(gov);
+        }
+    }
+
+    // --- ДЕЦЕНТРАЛИЗОВАННОЕ УПРАВЛЕНИЕ РЕЕСТРОМ (M-of-N GOVERNANCE) ---
+
+    /**
+     * @notice Авторизация регионального Посольства (Embassy Node) через консенсус Управленцев.
+     * Исключает единоличное право добавления/удаления нод.
+     */
+    function setEmbassyAuthorization(address _embassy, bool _status) external onlyGovernor {
+        require(_embassy != address(0), "Config: Invalid embassy address");
+        authorizedEmbassies[_embassy] = _status;
+        emit EmbassyAuthorized(_embassy, _status);
+    }
+
+    // --- БЕЗАДМИНСКОЕ ВОССТАНОВЛЕНИЕ (EMERGENCY CONSENSUS RECOVERY) ---
+
+    /**
+     * @notice Инициация голосования за разморозку пула без участия единого админа.
+     * Любое легитимное Посольство может создать предложение в случае компрометации Учредителей.
+     */
+    function initiateConsensusRescue(bytes32 _targetMerchantId) external onlyAuthorizedNode returns (uint256) {
+        require(isSystemFrozen, "Recovery: System is running in normal mode");
+        
+        proposalCounter++;
+        EmergencyProposal storage p = emergencyProposals[proposalCounter];
+        p.targetMerchantId = _targetMerchantId;
+        p.voteCount = 1;
+        p.timestamp = block.timestamp;
+        p.hasVoted[msg.sender] = true;
+
+        emit ProposalInitiated(proposalCounter, _targetMerchantId);
+        return proposalCounter;
+    }
+
+    /**
+     * @notice Голосование за разморозку системы другими Embassy-нодами.
+     * При достижении порога консенсуса, система автоматически оживает.
+     */
+    function voteForConsensusRescue(uint256 _proposalId) external onlyAuthorizedNode {
+        require(isSystemFrozen, "Recovery: System is not frozen");
+        EmergencyProposal storage p = emergencyProposals[_proposalId];
+        require(!p.executed, "Recovery: Proposal already executed");
+        require(!p.hasVoted[msg.sender], "Recovery: Duplicate vote from this node");
+        require(block.timestamp <= p.timestamp + 7 days, "Recovery: Proposal expired");
+
+        p.hasVoted[msg.sender] = true;
+        p.voteCount++;
+
+        // Если собрано достаточно децентрализованных голосов (М) — пулл активируется автоматически
+        if (p.voteCount >= requiredConsensusThreshold) {
+            p.executed = true;
+            isSystemFrozen = false;
+            monthlyClaimsPaid = 0;
+            lastResetTimestamp = block.timestamp;
+            
+            emit SystemConsensusResumed(_proposalId, p.voteCount);
+        }
+    }
+
+    // --- ОСНОВНОЙ ФИНТЕХ-ФУНКЦИОНАЛ (CORE PROTOCOL) ---
 
     function processEpochBatch(
         bytes32 _merchantId,
         bytes32 _batchRoot,
         uint256 _epochVolume,
         uint256 _epochChargebacks
-    ) external onlyAdmin {
-        require(!processedBatches[_batchRoot], "Pool: Batch already processed");
-        
+    ) external onlyAuthorizedNode whenNotFrozen {
+        require(!processedBatches[_batchRoot], "Pool: Batch Merkle Root already processed");
+        require(_merchantId != bytes32(0), "Pool: Invalid merchant ID");
+
         MerchantProfile storage merchant = merchants[_merchantId];
         merchant.totalVolume += _epochVolume;
         merchant.totalChargebacks += _epochChargebacks;
 
         if (merchant.totalVolume > 0) {
             uint256 fraudRatio = (merchant.totalChargebacks * 10000) / merchant.totalVolume;
-            if (fraudRatio > 100) { // > 1% Fraud Rate
+            if (fraudRatio > 100) {       
                 merchant.activeRiskTier = 3;
-                merchant.dynamicRate = BASE_RATE * 3;
-            } else if (fraudRatio > 20) { // > 0.2% Fraud Rate
+                merchant.dynamicRate = BASE_RATE * 3; 
+            } else if (fraudRatio > 20) {  
                 merchant.activeRiskTier = 2;
-                merchant.dynamicRate = BASE_RATE * 2;
+                merchant.dynamicRate = BASE_RATE * 2; 
             } else {
                 merchant.activeRiskTier = 1;
-                merchant.dynamicRate = BASE_RATE;
+                merchant.dynamicRate = BASE_RATE;     
             }
         } else {
             merchant.dynamicRate = BASE_RATE;
@@ -143,32 +272,56 @@ contract DeMISROCompensationPool {
         processedBatches[_batchRoot] = true;
 
         if (contributionAmount > 0) {
-            // ИБ-верификация: Явный перехват ошибки отсутствия лимита авторизации (Allowance)
             uint256 currentAllowance = settlementToken.allowance(msg.sender, address(this));
-            require(
-                currentAllowance >= contributionAmount,
-                "Pool: Insufficient ERC20 allowance authorized by alternative provider"
-            );
+            require(currentAllowance >= contributionAmount, "Pool: Insufficient ERC20 allowance");
 
-            require(
-                settlementToken.transferFrom(msg.sender, address(this), contributionAmount),
-                "Pool: Premium transfer failed"
-            );
+            merchant.totalContributed += contributionAmount;
+            totalPoolReserves += contributionAmount;
+
+            require(settlementToken.transferFrom(msg.sender, address(this), contributionAmount), "Pool: Transfer failed");
         }
 
-        emit BatchProcessed(_batchRoot, contributionAmount);
+        emit BatchProcessed(_merchantId, _batchRoot, contributionAmount);
     }
 
     function claimCompensation(
         bytes32 _merchantId, 
         uint256 _claimAmount, 
         address _recipient
-    ) external onlyAdmin {
-        require(_claimAmount <= MAX_CLAIM_LIMIT, "Pool: Exceeds Maximum Claim Limit");
-        require(settlementToken.balanceOf(address(this)) >= _claimAmount, "Pool: Insufficient liquidity");
+    ) external onlyAuthorizedNode whenNotFrozen {
+        require(_claimAmount <= MAX_CLAIM_LIMIT, "RiskCap: Exceeds Maximum Claim Limit ($500)");
+        require(_recipient != address(0), "Pool: Invalid recipient wallet");
 
+        if (block.timestamp >= lastResetTimestamp + 30 days) {
+            monthlyClaimsPaid = 0;
+            lastResetTimestamp = block.timestamp;
+        }
+
+        MerchantProfile storage merchant = merchants[_merchantId];
+
+        uint256 merchantYearlyLimit = merchant.totalContributed * 2;
+        require(merchant.claimsPaidThisYear + _claimAmount <= merchantYearlyLimit, "RiskCap: Exceeds annual aggregate limit");
+
+        uint256 dynamicStopLossTrigger = (totalPoolReserves * SYSTEM_STOP_LOSS_PCT) / 100;
+        if (monthlyClaimsPaid + _claimAmount > dynamicStopLossTrigger) {
+            isSystemFrozen = true;
+            emit SystemEmergencyTriggered("System Stop-Loss breached. Structural fraud attack suspected.");
+            revert("Emergency: System stop-loss activated. Payout blocked.");
+        }
+        merchant.claimsPaidThisYear += _claimAmount;
+        monthlyClaimsPaid += _claimAmount;
+        require(totalPoolReserves >= _claimAmount, "Pool: Insufficient reserves");
+        totalPoolReserves -= _claimAmount;
         require(settlementToken.transfer(_recipient, _claimAmount), "Pool: Payout failed");
-        emit ClaimSettled(_merchantId, _claimAmount);
+        emit ClaimSettled(_merchantId, _claimAmount, _recipient);
+    }
+
+    function depositValidatorRebate(uint256 _amount) external whenNotFrozen
+    {
+        require(_amount > 0, "Pool: Rebate must be > 0");
+        totalPoolReserves += _amount;
+        require(settlementToken.transferFrom(msg.sender, address(this), _amount), "Pool: Rebate transfer failed");
+        emit ValidatorRebateReceived(msg.sender, _amount);
     }
 }
 ```
