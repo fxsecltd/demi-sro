@@ -396,13 +396,10 @@ graph TD
         RPC -->|Internal Interlock| EE[Execution Engine Geth/Nethermind]
         EE <--> CL[Consensus Layer Lighthouse]
         
-        %% Инженерный хак: Узел-распорка для принудительного расширения высоты подложки
-        SPACER[ ] ---> EE
+        %% Переносим блок фундамента внутрь, фиксируя его положение
+        CL --> ETH[Ethereum L1 Public Network]
+        EE -.-> ETH
     end
-    
-    %% Центрирование нижнего блока
-    CL --> ETH[Ethereum L1 Public Network]
-    EE -.-> ETH
 
     %% Стилизация высококонтрастных цветов (GitHub Dark High Contrast)
     style Perimeter fill:#161b22,stroke:#444c56,stroke-width:2px,color:#ffffff
@@ -410,17 +407,15 @@ graph TD
     style RPC fill:#1c2128,stroke:#58a6ff,stroke-width:2px,color:#58a6ff
     style EE fill:#21262d,stroke:#f0f6fc,stroke-width:1.5px,color:#ffffff
     style CL fill:#21262d,stroke:#f0f6fc,stroke-width:1.5px,color:#ffffff
+    
+    %% Выделяем Ethereum L1 как суверенную внешнюю сеть, несмотря на внутреннее размещение
     style ETH fill:#0d1117,stroke:#34d399,stroke-width:2.5px,color:#34d399
-
-    %% Полная маскировка узла-распорки и его связей под цвет фона
-    style SPACER fill:#161b22,stroke:#161b22,stroke-width:0px,color:#161b22
 
     %% Кастомизация стрелок для максимальной видимости и маскировки
     linkStyle default stroke:#adbac7,stroke-width:2px;
     linkStyle 0 stroke:#58a6ff,stroke-width:2px;
     linkStyle 3 stroke:#34d399,stroke-width:2px;
-    linkStyle 4 stroke:#0d1117,stroke-width:1px;
-    linkStyle 5 stroke:#161b22,stroke-width:0px;
+    linkStyle 4 stroke:#161b22,stroke-width:1px;
 ```
 
 1. **Direct Execution Interlock:** When the Web2 API gateway receives an Epoch Batch via `POST /api/v1/epoch/submit`, it MUST sign the transaction using the APP's institutional hot wallet and broadcast it directly to the node's local Execution Engine (Geth or Nethermind) via an internal IPC socket, completely bypassing the public internet.
