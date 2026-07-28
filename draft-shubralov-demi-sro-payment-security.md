@@ -394,11 +394,14 @@ graph TD
     subgraph Perimeter [Embassy Node Secure Perimeter]
         PE[Payment Engine] -- mTLS --> RPC[Private RPC / API Gate]
         RPC -->|Internal Interlock| EE[Execution Engine Geth/Nethermind]
-        CL[Consensus Layer Lighthouse] <--> EE
+        EE <--> CL[Consensus Layer Lighthouse]
     end
+    
+    %% Выравнивание нижнего блока строго по центру под периметром
     CL --> ETH[Ethereum L1 Public Network]
+    EE -.-> ETH
 
-    %% Стилизация высококонтрастных цветов для темной темы
+    %% Стилизация высококонтрастных цветов (GitHub Dark High Contrast)
     style Perimeter fill:#161b22,stroke:#444c56,stroke-width:2px,color:#ffffff
     style PE fill:#21262d,stroke:#f0f6fc,stroke-width:1.5px,color:#ffffff
     style RPC fill:#1c2128,stroke:#58a6ff,stroke-width:2px,color:#58a6ff
@@ -410,6 +413,7 @@ graph TD
     linkStyle default stroke:#adbac7,stroke-width:2px;
     linkStyle 0 stroke:#58a6ff,stroke-width:2px;
     linkStyle 3 stroke:#34d399,stroke-width:2px;
+    linkStyle 4 stroke:rgba(0,0,0,0),stroke-width:0px; %% Скрытая связь для идеальной центровки
 ```
 
 1. **Direct Execution Interlock:** When the Web2 API gateway receives an Epoch Batch via `POST /api/v1/epoch/submit`, it MUST sign the transaction using the APP's institutional hot wallet and broadcast it directly to the node's local Execution Engine (Geth or Nethermind) via an internal IPC socket, completely bypassing the public internet.
