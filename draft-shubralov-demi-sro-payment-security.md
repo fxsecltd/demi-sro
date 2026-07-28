@@ -122,12 +122,13 @@ contract DeMISROCompensationPool {
         merchant.totalVolume += _epochVolume;
         merchant.totalChargebacks += _epochChargebacks;
 
+        // Расчет динамической ставки (логика сохранена)
         if (merchant.totalVolume > 0) {
             uint256 fraudRatio = (merchant.totalChargebacks * 10000) / merchant.totalVolume;
-            if (fraudRatio > 100) { // > 1% Fraud Rate
+            if (fraudRatio > 100) {
                 merchant.activeRiskTier = 3;
                 merchant.dynamicRate = BASE_RATE * 3;
-            } else if (fraudRatio > 20) { // > 0.2% Fraud Rate
+            } else if (fraudRatio > 20) {
                 merchant.activeRiskTier = 2;
                 merchant.dynamicRate = BASE_RATE * 2;
             } else {
@@ -142,6 +143,12 @@ contract DeMISROCompensationPool {
         processedBatches[_batchRoot] = true;
 
         if (contributionAmount > 0) {
+            // ИБ-уточнение: Новая проверка лимита авторизации (Allowance Check)
+            require(
+                settlementToken.allowance(msg.sender, address(this)) >= contributionAmount,
+                "Pool: Insufficient ERC20 allowance authorized by alternative provider"
+            );
+
             require(
                 settlementToken.transferFrom(msg.sender, address(this), contributionAmount),
                 "Pool: Premium transfer failed"
@@ -165,7 +172,7 @@ contract DeMISROCompensationPool {
 }
 ```
 
-# Regional Resiliency and Network Topology
+## Regional Resiliency and Network Topology
 To guarantee zero-trust operations across jurisdictions with volatile internet backbones, the infrastructure MUST separate on-chain block execution from public-facing internet routing.
 
 ## Regional "Embassy Node" Topology
@@ -185,7 +192,7 @@ Embassy Nodes MUST expose a standardized, authenticated REST API for Web2 paymen
 Invoked by the APP backend at the end of each 10-minute epoch.
 
 ## Request Format
-### json 
+json 
 { 
 "merchant_id": "0x7465737400000000000000000000000000000000000000000000000000000000", 
 "epoch_id": 10842, 
@@ -199,7 +206,7 @@ Invoked by the APP backend at the end of each 10-minute epoch.
 } 
 
 ## Response Format
-### json 
+json 
 { 
 "status": "QUEUED", 
 "batch_root": "0x3a4f8e...b2c1", 
@@ -212,7 +219,7 @@ Invoked by the APP backend at the end of each 10-minute epoch.
 Invoked to pull settlement funds when a time-delayed clearing chargeback is validated.
 
 ## Request Format
-### json 
+json 
 { 
 "merchant_id": "0x7465737400000000000000000000000000000000000000000000000000000000", 
 "claim_id": "99214-X", 
@@ -222,7 +229,7 @@ Invoked to pull settlement funds when a time-delayed clearing chargeback is vali
 } 
 
 ## Response Format
-### json 
+json 
 { 
 "status": "SETTLED", 
 "transaction_hash": "0xbc55...0112", 
