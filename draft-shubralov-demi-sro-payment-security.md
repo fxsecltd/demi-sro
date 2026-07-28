@@ -17,9 +17,11 @@ author:
   uri: https://demi-sro.org
 ---
 
-#{.abstract}
+# Abstract {#abstract}
 
 This document specifies a Best Current Practice (BCP) for risk management, automated self-regulation, and transaction settlement integrity among alternative payment service providers (APPs) operating in emerging markets without formal ISO/PCI-DSS coverage. It defines an architectural specification for a decentralized self-regulated organization (SRO) compensation pool deployed on the Ethereum Layer 1 blockchain. The protocol mitigates time-delayed fraud vectors, liquidity mismatches, and cross-border settlement frictions through cryptographic batching, zero-trust geo-distributed validator networks over private MPLS/satellite topologies, and automated algorithmic underwriting.
+
+---
 
 # Introduction
 
