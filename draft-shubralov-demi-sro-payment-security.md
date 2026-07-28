@@ -398,12 +398,18 @@ graph TD
     end
     CL --> ETH[Ethereum L1 Public Network]
 
-    style Perimeter fill:#161b22,stroke:#30363d,stroke-width:2px
-    style PE fill:#21262d,stroke:#30363d,stroke-width:1px,color:#c9d1d9
-    style RPC fill:#21262d,stroke:#30363d,stroke-width:1px,color:#58a6ff
-    style EE fill:#21262d,stroke:#30363d,stroke-width:1px,color:#c9d1d9
-    style CL fill:#21262d,stroke:#30363d,stroke-width:1px,color:#c9d1d9
-    style ETH fill:#0d1117,stroke:#238636,stroke-width:2px,color:#fff
+    %% Стилизация высококонтрастных цветов для темной темы
+    style Perimeter fill:#161b22,stroke:#444c56,stroke-width:2px,color:#ffffff
+    style PE fill:#21262d,stroke:#f0f6fc,stroke-width:1.5px,color:#ffffff
+    style RPC fill:#1c2128,stroke:#58a6ff,stroke-width:2px,color:#58a6ff
+    style EE fill:#21262d,stroke:#f0f6fc,stroke-width:1.5px,color:#ffffff
+    style CL fill:#21262d,stroke:#f0f6fc,stroke-width:1.5px,color:#ffffff
+    style ETH fill:#0d1117,stroke:#34d399,stroke-width:2.5px,color:#34d399
+
+    %% Кастомизация стрелок и текста связей для максимальной видимости
+    linkStyle default stroke:#adbac7,stroke-width:2px;
+    linkStyle 0 stroke:#58a6ff,stroke-width:2px;
+    linkStyle 3 stroke:#34d399,stroke-width:2px;
 ```
 
 1. **Direct Execution Interlock:** When the Web2 API gateway receives an Epoch Batch via `POST /api/v1/epoch/submit`, it MUST sign the transaction using the APP's institutional hot wallet and broadcast it directly to the node's local Execution Engine (Geth or Nethermind) via an internal IPC socket, completely bypassing the public internet.
