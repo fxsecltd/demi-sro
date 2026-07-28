@@ -6,7 +6,7 @@
      submissionType="IETF"
      xml:lang="en"
      version="3">
-
+  
   <front>
     <title abbrev="DeMI SRO Payment Security">Blockchain-Backed Risk Pooling and Self-Regulation Protocol for Alternative Payment Providers (DeMI)</title>
     <seriesInfo name="Internet-Draft" value="draft-shubralov-demi-sro-payment-security-00"/>
@@ -54,7 +54,7 @@
 
     <section title="Protocol Mechanics and Smart Contract Architecture" anchor="protocol-mechanics">
       <t>The DeMI protocol shifts the risk management layer from private, auditable Web2 databases to an autonomous, public smart contract acting as a decentralized escrow and risk underwriter.</t>
-
+      
       <section title="Transaction Batching Pipeline">
         <t>To minimize Ethereum L1 gas expenditures, APPs MUST NOT execute on-chain transactions for individual payment actions.</t>
         <ol>
@@ -428,6 +428,7 @@ graph TD
   <section title="IANA Considerations" anchor="iana-considerations">
     <t>This document requires no registry assignments or interventions from IANA.</t>
   </section>
+</middle>
 
   <back>
     <references title="Normative References">
