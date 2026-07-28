@@ -14,7 +14,7 @@ DeMI-SRO is an international, open-source fintech consortium co-founded by **Sol
 The technical core runs on **Ethereum Layer 1**, establishing a Decentralized Compensation Fund governed strictly by smart contracts ("Code is Law").
 
 ### Git-Based Corporate Governance (Zero Bureaucracy)
-In accordance with `GOVERNANCE.md`, this consortium waives all paper document requirements. Membership management is fully handled via cryptographically signed internal branches and **Pull Requests (PR)** within this master repository. 
+In accordance with `GOVERNANCE_EN.md`, this consortium waives all paper document requirements. Membership management is fully handled via cryptographically signed internal branches and **Pull Requests (PR)** within this master repository. 
 
 *To preserve the integrity of the Linear Audit Trail, the use of external forks is strictly prohibited. All actions must happen inside this single ledger.*
 
@@ -65,7 +65,7 @@ DeMI-SRO — это международный финтех-консорциум
 Техническое ядро развернуто в сети **Ethereum L1** в виде смарт-контракта Децентрализованного компенсационного фонда, функционирующего по принципу «Код есть Закон».
 
 ### Управление членством через Git (Ноль бюрократии)
-В соответствии с регламентом `GOVERNANCE.md`, консорциум полностью отказывается от бумажного документооборота. Управление составом участников осуществляется исключительно через создание внутренних веток и механизмы **Pull Requests (PR)** внутри данного репозитория.
+В соответствии с регламентом `GOVERNANCE_RU.md`, консорциум полностью отказывается от бумажного документооборота. Управление составом участников осуществляется исключительно через создание внутренних веток и механизмы **Pull Requests (PR)** внутри данного репозитория.
 
 *В целях сохранения целостности линейного аудиторского следа (Linear Audit Trail) использование внешних форков строго запрещено. Все действия должны происходить внутри единого репозитория-реестра.*
 
@@ -131,6 +131,9 @@ All entities that successfully complete the Git joinder process will be permanen
 ---
 
 ## Repository Structure / Структура репозитория
-* `draft-shubralov-demi-sro-payment-security.md` — Исходный код IETF Internet-Draft (kramdown-rfc2629).
-* `PARTICIPANTS.json` — Immutable ledger of SRO members / Неизменяемый реестр участников.
-* `GOVERNANCE.md` — Digital joinder and exit rules / Регламент цифрового членства.
+* `draft-shubralov-demi-sro-payment-security.md` — Исходный код IETF Internet-Draft (синтаксис kramdown-rfc2629).
+* `openapi.yaml` — Спецификация интерфейсов Embassy Node в формате OpenAPI 3.0 (Swagger) с поддержкой mTLS и кодов ошибок ERC-20 Allowance.
+* `PARTICIPANTS.json` — Immutable ledger of SRO members / Неизменяемый реестр и иерархия участников консорциума.
+* `GOVERNANCE_RU.md` — Регламент цифрового членства и правила Git-управления (Русская версия).
+* `GOVERNANCE_EN.md` — Digital joinder, exit rules, and Git-governance policies (English version).
+* `index.html` — Двуязычная главная страница веб-сайта проекта на GitHub Pages.
