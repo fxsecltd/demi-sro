@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<rfc xmlns:xi="http://www.w3.org/2001/XInclude"
-     xmlns="http://purl.org/net/rfc7999"
+<rfc xmlns="http://purl.org/net/rfc7999"
      docName="draft-shubralov-demi-sro-payment-security-00"
      ipr="trust200902"
      submissionType="independent"
@@ -17,13 +16,6 @@
       </address>
     </author>
     <date year="2026" month="07" day="28"/>
-    <area>Security</area>
-    <keyword>payment</keyword>
-    <keyword>blockchain</keyword>
-    <keyword>sro</keyword>
-    <keyword>security</keyword>
-    <keyword>mpls</keyword>
-    <keyword>ethereum</keyword>
     <abstract>
       <t>This document specifies a Best Current Practice (BCP) for risk management, automated self-regulation, and transaction settlement integrity among alternative payment service providers (APPs) operating in emerging markets without formal ISO/PCI-DSS coverage. It defines an architectural specification for a decentralized self-regulated organization (SRO) compensation pool deployed on the Ethereum Layer 1 blockchain. The protocol mitigates time-delayed fraud vectors, liquidity mismatches, and cross-border settlement frictions through cryptographic batching, zero-trust geo-distributed validator networks over private MPLS/satellite topologies, and automated algorithmic underwriting.</t>
     </abstract>
