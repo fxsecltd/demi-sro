@@ -1,0 +1,48 @@
+{
+  "consortium_name": "DeMI-SRO Consortium",
+  "legal_framework": "Decentralized Blockchain Self-Regulated Organization",
+  "governance_model": "Git-Based Adhesion Ruleset (GOVERNANCE.md)",
+  "compensation_pool_token": "USDC/USDT (ERC-20 Specification)",
+  "last_updated": "2026-07-28",
+  "founders": [
+    {
+      "entity_name": "ООО 'ИИ Кибербезопасность' / AI Cybersecurity LLC",
+      "registered_jurisdiction": "Russian Federation",
+      "registration_number": "1237700456789",
+      "signatory_name": "Евгений А. Шубралов / Evgeny A. Shubralov",
+      "associated_eth_address": "0x9E7D88f24b99aaecf87135acde421B99aaecf871",
+      "status": "Active",
+      "role": "Co-Founder / Infrastructure Administrator"
+    },
+    {
+      "entity_name": "ИП Шубралов Е. А. / Sole Proprietor Shubralov E.A.",
+      "registered_jurisdiction": "Russian Federation",
+      "registration_number": "326774600123456",
+      "signatory_name": "Евгений А. Шубралов / Evgeny A. Shubralov",
+      "associated_eth_address": "0xB7E2A99aaecf87135acde421B99aaecf87135A12",
+      "status": "Active",
+      "role": "Co-Founder / Strategic Risk Architect"
+    }
+  ],
+  "associated_participants": [
+    {
+      "entity_name": "[Наименование Организации / Entity Full Name]",
+      "registered_jurisdiction": "[Страна регистрации / Country]",
+      "registration_number": "[Регистрационный номер / INN / OGRN / Business ID]",
+      "signatory_name": "[ФИО уполномоченного лица / Authorized Signatory Name]",
+      "associated_eth_address": "[ETH кошелек для авторизации и пула / APP Gateway Wallet Address]",
+      "pgp_key_fingerprint": "[Отпечаток PGP ключа для подписи коммитов / 40-character Hex Key ID]",
+      "status": "Pending_Approval_via_PR_Merge",
+      "contribution_tier": "None / Regular SRO Member",
+      "regional_embassy_assignment": "None"
+    }
+  ],
+  "infrastructure_sponsors": [
+    {
+      "entity_name": "[Наименование спонсора / Sponsor Company Name]",
+      "contribution_tier": "Platinum Sponsor",
+      "infrastructure_backed": "National Embassy Node (Pakistan Cluster)",
+      "on_chain_tx_hash": "0xbc5588f24b99aaecf87135acde421B99aaecf87135acde421B99aaecf8711122"
+    }
+  ]
+}
