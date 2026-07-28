@@ -259,7 +259,6 @@ Traditional blockchain interactions rely on third-party RPC providers (e.g., Inf
 
 ~~~~~~~~ artwork
 +-------------------------------------------------------------+
-
 |               Embassy Node Secure Perimeter                 |
 |                                                             |
 |  +-----------------+           +-------------------------+  |
@@ -276,7 +275,6 @@ Traditional blockchain interactions rely on third-party RPC providers (e.g., Inf
 +----------|--------------------------------------------------+
            v
    +---------------+
-
    | Ethereum L1   |
    | Public Network|
    +---------------+
