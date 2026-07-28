@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<rfc xmlns="http://purl.org/net/rfc7999"
+<!DOCTYPE rfc SYSTEM "rfc2629-xhtml.ent">
+<rfc xmlns:xi="http://www.w3.org/2001/XInclude"
      docName="draft-shubralov-demi-sro-payment-security-00"
      ipr="trust200902"
      submissionType="independent"
@@ -23,7 +24,7 @@
 
   <middle>
     <section title="Introduction" anchor="introduction">
-      <t>Alternative Payment Providers (APPs)—including payment aggregators, QR-code networks, and mobile wallet ecosystems—handle substantial transaction volumes in South and Southeast Asia (e.g., India, Pakistan, Bangladesh, Vietnam, Cambodia). Due to their structural separation from legacy clearinghouses, these entities lack specialized international standards (ISO) or rigid frameworks (PCI-DSS) tailored to their operational risks.</t>
+      <t>Alternative Payment Providers (APPs) including payment aggregators, QR-code networks, and mobile wallet ecosystems handle substantial transaction volumes in South and Southeast Asia (e.g., India, Pakistan, Bangladesh, Vietnam, Cambodia). Due to their structural separation from legacy clearinghouses, these entities lack specialized international standards (ISO) or rigid frameworks (PCI-DSS) tailored to their operational risks.</t>
       <t>The primary operational vulnerability is time-delayed fraud ("hit-and-run" exploits). In these scenarios, a customer authorizes a payment, the APP receives a temporary confirmation or clearing registry, and immediately credits the merchant. Days later, the clearing bank issues a chargeback due to card theft or friendly fraud. If the merchant has already withdrawn the funds, the APP incurs a capital loss.</t>
       <t>This document outlines a standardized, extraterritorial approach to mitigate this risk by establishing a Self-Regulated Organization (SRO) backed by an automated, blockchain-hosted compensation pool. This protocol eliminates capital stagnation caused by fixed rolling reserves while providing immutable mathematical guarantees to financial regulators.</t>
       <t>To ensure absolute resilience and eliminate any Single Point of Failure (SPOF), the underlying governance of the protocol completely rejects single-administrator control vectors. The operational and emergency management layers are hardcoded into an autonomous M-of-N consensus matrix distributed cryptographically among the National Embassy Nodes, guaranteeing system survivability and continuous recovery even in the event of partial cryptographic key compromise.</t>
@@ -59,7 +60,7 @@
       </section>
 
       <section title="Core Solidity Implementation Reference">
-        <t>The compensation pool and risk management ledger MUST implement a decentralized, multi-governor smart contract architecture that rejects centralized ownership. Administrative functions—such as regional node authorization and emergency fund restoration—MUST require an on-chain M-of-N threshold consensus executed directly by the authenticated governance entities.</t>
+        <t>The compensation pool and risk management ledger MUST implement a decentralized, multi-governor smart contract architecture that rejects centralized ownership. Administrative functions such as regional node authorization and emergency fund restoration MUST require an on-chain M-of-N threshold consensus executed directly by the authenticated governance entities.</t>
         <t>The core contract implementation is specified as follows:</t>
         <sourcecode type="solidity"><![CDATA[
 // SPDX-License-Identifier: MIT
@@ -270,7 +271,7 @@ contract DeMISROConsensusPool {
     <section title="Regional Resiliency and Network Topology" anchor="regional-resiliency">
       <t>To guarantee zero-trust operations across jurisdictions with volatile internet backbones, the infrastructure MUST separate on-chain block execution from public-facing internet routing.</t>
       
-      <section title="Regional 'Embassy Node' Topology">
+      <section title="Regional Embassy Node Topology">
         <t>Each participating country (India, Pakistan, Bangladesh, Vietnam, Cambodia) SHALL host an autonomous, isolated data center stack ("Embassy Node"). Each node consists of an Ethereum execution client (e.g., Geth or Nethermind), a consensus client (e.g., Lighthouse), and a secure regional API gate.</t>
       </section>
       
