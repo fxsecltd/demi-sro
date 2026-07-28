@@ -78,6 +78,7 @@ interface IERC20 {
     function transferFrom(address from, address to, uint256 amount) external returns (bool);
     function transfer(address to, uint256 amount) external returns (bool);
     function balanceOf(address account) external view returns (uint256);
+    function allowance(address owner, address spender) external view returns (uint256);
 }
 
 contract DeMISROCompensationPool {
@@ -122,13 +123,12 @@ contract DeMISROCompensationPool {
         merchant.totalVolume += _epochVolume;
         merchant.totalChargebacks += _epochChargebacks;
 
-        // Расчет динамической ставки (логика сохранена)
         if (merchant.totalVolume > 0) {
             uint256 fraudRatio = (merchant.totalChargebacks * 10000) / merchant.totalVolume;
-            if (fraudRatio > 100) {
+            if (fraudRatio > 100) { // > 1% Fraud Rate
                 merchant.activeRiskTier = 3;
                 merchant.dynamicRate = BASE_RATE * 3;
-            } else if (fraudRatio > 20) {
+            } else if (fraudRatio > 20) { // > 0.2% Fraud Rate
                 merchant.activeRiskTier = 2;
                 merchant.dynamicRate = BASE_RATE * 2;
             } else {
@@ -143,9 +143,10 @@ contract DeMISROCompensationPool {
         processedBatches[_batchRoot] = true;
 
         if (contributionAmount > 0) {
-            // ИБ-уточнение: Новая проверка лимита авторизации (Allowance Check)
+            // ИБ-верификация: Явный перехват ошибки отсутствия лимита авторизации (Allowance)
+            uint256 currentAllowance = settlementToken.allowance(msg.sender, address(this));
             require(
-                settlementToken.allowance(msg.sender, address(this)) >= contributionAmount,
+                currentAllowance >= contributionAmount,
                 "Pool: Insufficient ERC20 allowance authorized by alternative provider"
             );
 
