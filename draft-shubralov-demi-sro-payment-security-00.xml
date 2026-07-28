@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <rfc xmlns:xi="http://www.w3.org/2001/XInclude"
      category="info"
-     docName="draft-shubralov-demi-sro-payment-security-00"
+     docName="draft-shubralov-demi-sro-payment-security-01"
      ipr="trust200902"
      submissionType="IETF"
      xml:lang="en"
@@ -12,7 +12,7 @@ Blockchain-Backed Risk Pooling and Self-Regulation Protocol
 for Alternative Payment Providers (DeMI)
 </title>
 <seriesInfo name="Internet-Draft"
-value="draft-shubralov-demi-sro-payment-security-00"/>
+value="draft-shubralov-demi-sro-payment-security-01"/>
 <author fullname="Evgeny A. Shubralov">
 <organization>AI Cybersecurity LLC / IP Shubralov</organization>
 <address>
