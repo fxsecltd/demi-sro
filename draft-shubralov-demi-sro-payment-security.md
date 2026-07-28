@@ -258,24 +258,43 @@ To ensure deterministic transaction inclusion, maximum protocol uptime, and abso
 Traditional blockchain interactions rely on third-party RPC providers (e.g., Infura, Alchemy), which introduces latency and vector risks such as man-in-the-middle (MITM) attacks and MEV front-running. Each DeMI SRO National Embassy Node MUST operate its own execution client, consensus client, and an attached internal validator infrastructure.
 
 +-------------------------------------------------------------+
+
 |               Embassy Node Secure Perimeter                 |
+
 |                                                             |
+
 |  +-----------------+           +-------------------------+  |
+
 |  | Payment Engine  | --mTLS--> |  Private RPC / API Gate |  |
+
 |  +-----------------+           +-------------------------+  |
+
 |                                             |               |
+
 |                                   Internal Interlock        |
+
 |                                             v               |
+
 |  +-----------------+           +-------------------------+  |
+
 |  | Consensus Layer | <-------  |    Execution Engine     |  |
+
 |  | (Lighthouse)    |           |  (Geth/Nethermind RPC)  |  |
+
 |  +-----------------+           +-------------------------+  |
+
 |          |                                                  |
+
 +----------|--------------------------------------------------+
+
            v
+
    +---------------+
+
    | Ethereum L1   |
+
    | Public Network|
+
    +---------------+
 
 1. **Direct Execution Interlock:** When the Web2 API gateway receives an Epoch Batch via `POST /api/v1/epoch/submit`, it MUST sign the transaction using the APP's institutional hot wallet and broadcast it directly to the node's local Execution Engine (Geth or Nethermind) via an internal IPC socket, completely bypassing the public internet.
