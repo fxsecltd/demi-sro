@@ -413,7 +413,7 @@ graph TD
     linkStyle default stroke:#adbac7,stroke-width:2px;
     linkStyle 0 stroke:#58a6ff,stroke-width:2px;
     linkStyle 3 stroke:#34d399,stroke-width:2px;
-    linkStyle 4 stroke:rgba(0,0,0,0),stroke-width:0px; %% Скрытая связь для идеальной центровки
+    linkStyle 4 stroke:#0d1117,stroke-width:1px; %% Скрытая связь под цвет фона для идеальной центровки
 ```
 
 1. **Direct Execution Interlock:** When the Web2 API gateway receives an Epoch Batch via `POST /api/v1/epoch/submit`, it MUST sign the transaction using the APP's institutional hot wallet and broadcast it directly to the node's local Execution Engine (Geth or Nethermind) via an internal IPC socket, completely bypassing the public internet.
