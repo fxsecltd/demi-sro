@@ -1,32 +1,25 @@
 ---
 title: Blockchain-Backed Risk Pooling and Self-Regulation Protocol for Alternative Payment Providers (DeMI)
 abbrev: DeMI SRO Payment Security
-docname: draft-shubralov-demi-sro-payment-security-01
+docname: draft-shubralov-demi-sro-payment-security-00
 date: 2026-07-28
 category: bcp
 ipr: trust200902
 area: Security
 workgroup: Security Area Advisory Group
-keyword:
- - payment
- - blockchain
- - sro
- - security
- - mpls
- - ethereum
+keyword: [payment, blockchain, sro, security, mpls, ethereum]
 
 author:
- -
-    ins: E. A. Shubralov
-    name: Evgeniy A. Shubralov
-    org: AI Cybersecurity LLC / IP Shubralov
-    email: draft-submission@demi-sro.org
-    uri: https://demi-sro.org
-
-abstract: |
-  This document specifies a Best Current Practice (BCP) for risk management, automated self-regulation, and transaction settlement integrity among alternative payment service providers (APPs) operating in emerging markets without formal ISO/PCI-DSS coverage. It defines an architectural specification for a decentralized self-regulated organization (SRO) compensation pool deployed on the Ethereum Layer 1 blockchain. The protocol mitigates time-delayed fraud vectors, liquidity mismatches, and cross-border settlement frictions through cryptographic batching, zero-trust geo-distributed validator networks over private MPLS/satellite topologies, and automated algorithmic underwriting.
-
+  ins: E. A. Shubralov
+  name: Evgeny A. Shubralov
+  org: AI Cybersecurity LLC / IP Shubralov
+  email: draft-submission@demi-sro.org
+  uri: https://demi-sro.org
 ---
+
+#{.abstract}
+
+This document specifies a Best Current Practice (BCP) for risk management, automated self-regulation, and transaction settlement integrity among alternative payment service providers (APPs) operating in emerging markets without formal ISO/PCI-DSS coverage. It defines an architectural specification for a decentralized self-regulated organization (SRO) compensation pool deployed on the Ethereum Layer 1 blockchain. The protocol mitigates time-delayed fraud vectors, liquidity mismatches, and cross-border settlement frictions through cryptographic batching, zero-trust geo-distributed validator networks over private MPLS/satellite topologies, and automated algorithmic underwriting.
 
 # Introduction
 
