@@ -586,11 +586,11 @@ internal validator infrastructure.</t>
 <sourcecode type="mermaid"><![CDATA[
 graph TD
     subgraph P [Embassy Node]
-        PE[Payment Engine]
-        RPC[Private RPC]
-        EE[Execution Engine]
-        CL[Consensus Layer]
-        ETH[Ethereum L1]
+        PE[Payment_Engine]
+        RPC[Private_RPC]
+        EE[Execution_Engine]
+        CL[Consensus_Layer]
+        ETH[Ethereum_L1]
     end
     PE -- mTLS --> RPC
     RPC --> EE
