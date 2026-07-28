@@ -44,11 +44,11 @@
     <section title="Terminology" anchor="terminology">
       <t>The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "SHOULD NOT", "RECOMMENDED", "NOT RECOMMENDED", "MAY", and "OPTIONAL" in this document are to be interpreted as described in BCP 14 <xref target="RFC2119"/> <xref target="RFC8174"/> when, and only when, they appear in all capitals, as shown here.</t>
       <ul empty="true">
-        <li><t><spanx style="strong">Alternative Payment Provider (APP):</spanx> A non-bank financial intermediary aggregating local payment methods.</t></li>
-        <li><t><spanx style="strong">DeMI SRO:</spanx> Decentralized Mutual Insurance Self-Regulated Organization.</t></li>
-        <li><t><spanx style="strong">Embassy Node:</spanx> A regional server infrastructure combining an Ethereum L1 full node, validator client, and private RPC gateway.</t></li>
-        <li><t><spanx style="strong">Epoch Batch:</spanx> A packed cryptographic structure containing a fixed interval of localized transaction states.</t></li>
-        <li><t><spanx style="strong">Base Fee and Priority Fee:</spanx> Ethereum gas mechanics as defined in EIP-1559.</t></li>
+        <li><t><strong>Alternative Payment Provider (APP):</strong> A non-bank financial intermediary aggregating local payment methods.</t></li>
+        <li><t><strong>DeMI SRO:</strong> Decentralized Mutual Insurance Self-Regulated Organization.</t></li>
+        <li><t><strong>Embassy Node:</strong> A regional server infrastructure combining an Ethereum L1 full node, validator client, and private RPC gateway.</t></li>
+        <li><t><strong>Epoch Batch:</strong> A packed cryptographic structure containing a fixed interval of localized transaction states.</t></li>
+        <li><t><strong>Base Fee and Priority Fee:</strong> Ethereum gas mechanics as defined in EIP-1559.</t></li>
       </ul>
     </section>
 
@@ -57,7 +57,7 @@
       
       <section title="Transaction Batching Pipeline">
         <t>To minimize Ethereum L1 gas expenditures, APPs MUST NOT execute on-chain transactions for individual payment actions.</t>
-        <ol spacing="normal">
+        <ol>
           <li><t>The local APP payment engine logs transactions in real-time.</t></li>
           <li><t>Every 10 minutes (the standard Epoch interval), the APP compiles all transaction metadata into a Merkle Tree.</t></li>
           <li><t>The root hash of the Merkle Tree, along with total volume and net risk metrics, is packaged into an on-chain batch submission.</t></li>
@@ -404,8 +404,8 @@ graph TD
         ]]></sourcecode>
         
         <ul>
-          <li><t><spanx style="strong">Direct Execution Interlock:</spanx> When the Web2 API gateway receives an Epoch Batch via <tt>POST /api/v1/epoch/submit</tt>, it MUST sign the transaction using the APP's institutional hot wallet and broadcast it directly to the node's local Execution Engine (Geth or Nethermind) via an internal IPC socket, completely bypassing the public internet.</t></li>
-          <li><t><spanx style="strong">Validator Priority Injection:</spanx> The local Consensus Client (Lighthouse or Prysm) MUST be configured to prioritize blocks containing transactions originated from the node's own private RPC endpoint. When the Embassy Node's validator is selected as the slot proposer on Ethereum L1, it MUST inject the queued DeMI SRO transactions at the top of the block execution payload, reducing inclusion latency to zero.</t></li>
+          <li><t><strong>Direct Execution Interlock:</strong> When the Web2 API gateway receives an Epoch Batch via <tt>POST /api/v1/epoch/submit</tt>, it MUST sign the transaction using the APP's institutional hot wallet and broadcast it directly to the node's local Execution Engine (Geth or Nethermind) via an internal IPC socket, completely bypassing the public internet.</t></li>
+          <li><t><strong>Validator Priority Injection:</strong> The local Consensus Client (Lighthouse or Prysm) MUST be configured to prioritize blocks containing transactions originated from the node's own private RPC endpoint. When the Embassy Node's validator is selected as the slot proposer on Ethereum L1, it MUST inject the queued DeMI SRO transactions at the top of the block execution payload, reducing inclusion latency to zero.</t></li>
         </ul>
       </section>
       
@@ -413,9 +413,9 @@ graph TD
         <t>Operating public-facing validators within an enterprise financial контур requires strict compliance with recent institutional blockchain frameworks. Embassy Nodes SHOULD adhere to the guidelines established by major institutional Ethereum initiatives and working groups focused on corporate node validation:</t>
         
         <ul>
-          <li><t><spanx style="strong">Enterprise Ethereum Alliance (EEA) Standards:</spanx> Node operators MUST implement the EEA Enterprise Architecture specifications regarding node access control, permissioned network routing over MPLS, and zero-knowledge evidence auditing for local central banks.</t></li>
-          <li><t><spanx style="strong">Institutional Liquid Staking and Validator Frameworks:</spanx> For financial risk mitigation, nodes SHOULD utilize distributed validator technology (DVT) frameworks (such as Obol Network or SSV Network). DVT allows an Embassy Node's 32 ETH validation key to be split into multi-signature shares distributed securely between the sub-nodes of India, Pakistan, and Vietnam. This guarantees that if one physical data center goes offline, the remaining "embassies" can cooperatively sign blocks, preventing slashing penalties and maintaining continuous transaction ledgering.</t></li>
-          <li><t><spanx style="strong">Compliance and Sanction Filtering at the RPC Layer:</spanx> While the smart contract logic is immutable and extraterritorial ("Code is Law"), national Embassy Nodes MAY configure their private RPC layer to comply with local financial intelligence regulations (e.g., FIU-IND in India) by cross-referencing merchant wallet addresses against official local blocklists before broadcast.</t></li>
+          <li><t><strong>Enterprise Ethereum Alliance (EEA) Standards:</strong> Node operators MUST implement the EEA Enterprise Architecture specifications regarding node access control, permissioned network routing over MPLS, and zero-knowledge evidence auditing for local central banks.</t></li>
+          <li><t><strong>Institutional Liquid Staking and Validator Frameworks:</strong> For financial risk mitigation, nodes SHOULD utilize distributed validator technology (DVT) frameworks (such as Obol Network or SSV Network). DVT allows an Embassy Node's 32 ETH validation key to be split into multi-signature shares distributed securely between the sub-nodes of India, Pakistan, and Vietnam. This guarantees that if one physical data center goes offline, the remaining "embassies" can cooperatively sign blocks, preventing slashing penalties and maintaining continuous transaction ledgering.</t></li>
+          <li><t><strong>Compliance and Sanction Filtering at the RPC Layer:</strong> While the smart contract logic is immutable and extraterritorial ("Code is Law"), national Embassy Nodes MAY configure their private RPC layer to comply with local financial intelligence regulations (e.g., FIU-IND in India) by cross-referencing merchant wallet addresses against official local blocklists before broadcast.</t></li>
         </ul>
       </section>
       
