@@ -278,28 +278,31 @@ contract DeMISROConsensusPool {
   }]]></sourcecode>
   </section>
   </section>
-    <section title="Regional Resilency and Network Topology" anchor="regional-resiliency">
-      <t>To guarantee zero-trust operations across jurisdictions with volatile internet backbones, the infrastructure MUST separate on-chain block execution from public-facing internet routing.</t>
-      
-      <section title="Regional Embassy Node Topology">
-        <t>Each participating country (India, Pakistan, Bangladesh, Vietnam, Cambodia) SHALL host an autonomous, isolated data center stack ("Embassy Node"). Each node consists of an Ethereum execution client (e.g., Geth or Nethermind), a consensus client (e.g., Lighthouse), and a secure regional API gate.</t>
-      </section>
-      
-      <section title="Isolated MPLS and Satellite Network Mesh">
-        <t>All peer-to-peer (P2P) traffic dedicated to node replication, synchronization, and local RPC query forwarding MUST be encapsulated within a private Multi-Protocol Label Switching (MPLS) VPN network mesh.</t>
-        <t>To protect against physical cable severing or local state-level network censorship, every Embassy Node MUST deploy a secondary satellite uplink (e.g., Low Earth Orbit satellite terminal). The edge router MUST automatically failover to the satellite channel within 500 milliseconds if the primary MPLS connection is dropped.</t>
-      </section>
+<section title="Regional Resiliency and Network Topology" anchor="regional-resiliency">
+  <t>To guarantee zero-trust operations across jurisdictions with volatile internet backbones, the infrastructure MUST separate on-chain block execution from public-facing internet routing.</t>
+  
+  <section title="Regional 'Embassy Node' Topology">
+    <t>Each participating country (India, Pakistan, Bangladesh, Vietnam, Cambodia) SHALL host an autonomous, isolated data center stack ("Embassy Node"). Each node consists of an Ethereum execution client (e.g., Geth or Nethermind), a consensus client (e.g., Lighthouse), and a secure regional API gate.</t>
+  </section>
+  
+  <section title="Isolated MPLS and Satellite Network Mesh">
+    <t>All peer-to-peer (P2P) traffic dedicated to node replication, synchronization, and local RPC query forwarding MUST be encapsulated within a private Multi-Protocol Label Switching (MPLS) VPN network mesh.</t>
+    <t>To protect against physical cable severing or local state-level network censorship, every Embassy Node MUST deploy a secondary satellite uplink (e.g., Low Earth Orbit satellite terminal). The edge router MUST automatically failover to the satellite channel within 500 milliseconds if the primary MPLS connection is dropped.</t>
+  </section>
+  
+  <section title="Capacity-Aware Round-Robin Load Balancing">
+    <t>Regional applications interact with nodes via local private RPC endpoints. Traffic load balancing across international node boundaries MUST use a Weighted Round-Robin (WRR) algorithm. The weights MUST dynamically adjust based on real-time node resource telemetry (CPU load, network throughput, and mTLS connection latency). If Node A (e.g., Bangladesh) experiences hardware saturation, traffic MUST be progressively offloaded to Node B (e.g., India) proportionate to Node B's remaining system capacity.</t>
+  </section>
+</section>
 
-      <section title="Capacity-Aware Round-Robin Load Balancing">
-        <t>Regional applications interact with nodes via local private RPC endpoints. Traffic load balancing across international node boundaries MUST use a Weighted Round-Robin (WRR) algorithm. The weights MUST dynamically adjust based on real-time node resource telemetry (CPU load, network throughput, and mTLS connection latency). If Node A (e.g., Bangladesh) experiences hardware saturation, traffic MUST be progressively offloaded to Node B (e.g., India) proportionate to Node B's remaining system capacity.</t>
-      </section>
-    </section>
-    <section title="API Specifications" anchor="api-specifications">
-      <t>Embassy Nodes MUST expose a standardized, authenticated REST API for Web2 payment processing engines. All endpoints MUST require authentication via TLS client certificates (mTLS).</t>
-      <t>To ensure cross-vendor compatibility among different APP aggregators, all Embassy Nodes SHALL comply with the formal OpenAPI 3.0 specification schema defined in the root repository as openapi.yaml.</t>
-      <section title="Endpoint: /api/v1/epoch/submit">
-        <t>Invoked by the APP backend at the end of each 10-minute epoch. The structure MUST strictly follow the json format schema.</t>
-        <sourcecode type="json"><![CDATA[
+<section title="API Specifications" anchor="api-specifications">
+  <t>Embassy Nodes MUST expose a standardized, authenticated REST API for Web2 payment processing engines. All endpoints MUST require authentication via TLS client certificates (mTLS).</t>
+  
+  <section title="POST /api/v1/epoch/submit">
+    <t>Invoked by the APP backend at the end of each 10-minute epoch.</t>
+    
+    <section title="Request Format">
+      <sourcecode type="json"><![CDATA[
 {
   "merchant_id": "0x7465737400000000000000000000000000000000000000000000000000000000",
   "epoch_id": 10842,
@@ -310,11 +313,27 @@ contract DeMISROConsensusPool {
     "transaction_count": 3120
   }
 }
-]]></sourcecode>
-</section>
-<section title="Endpoint: /api/v1/claims/request">
-        <t>Invoked to pull settlement funds when a time-delayed clearing chargeback is validated.</t>
-        <sourcecode type="json"><![CDATA[
+      ]]></sourcecode>
+    </section>
+    
+    <section title="Response Format">
+      <sourcecode type="json"><![CDATA[
+{
+  "status": "QUEUED",
+  "batch_root": "0x3a4f8e...b2c1",
+  "calculated_premium_usd": 462.75,
+  "risk_tier": 2,
+  "estimated_gas_eth": "0.0042"
+}
+      ]]></sourcecode>
+    </section>
+  </section>
+  
+  <section title="POST /api/v1/claims/request">
+    <t>Invoked to pull settlement funds when a time-delayed clearing chargeback is validated.</t>
+    
+    <section title="Request Format">
+      <sourcecode type="json"><![CDATA[
 {
   "merchant_id": "0x7465737400000000000000000000000000000000000000000000000000000000",
   "claim_id": "99214-X",
@@ -322,51 +341,126 @@ contract DeMISROConsensusPool {
   "evidence_hash": "0x88f2...99aa",
   "destination_wallet": "0x9E7D...421B"
 }
-]]></sourcecode>
-</section>
+      ]]></sourcecode>
+    </section>
+    
+    <section title="Response Format">
+      <sourcecode type="json"><![CDATA[
+{
+  "status": "SETTLED",
+  "transaction_hash": "0xbc55...0112",
+  "amount_paid_usd": 350.00
+}
+      ]]></sourcecode>
+    </section>
+  </section>
 </section>
 
 <section title="Security Considerations" anchor="security-considerations">
   <t>Operating an SRO compensation pool over a public L1 blockchain requires stringent defense-in-depth measures to counter Advanced Persistent Threats (APTs) and consensus level exploits.</t>
-      <section title="Validator Key Isolation and Remote Signing">
-        <t>Embassy Nodes hosting Ethereum validators MUST NOT store consensus signing keys (BLS12-381 keys) on the same virtual instance as the network-exposed execution or consensus clients. Validators MUST utilize a dedicated, air-gapped Remote Signer sub-network or a Hardware Security Module (HSM) implementing EIP-3044 standards. The node requests signatures via encrypted RPC, preventing key exfiltration if the public endpoint is compromised via an unpatched zero-day.</t>
-      </section>
+  
+  <section title="Validator Key Isolation and Remote Signing">
+    <t>Embassy Nodes hosting Ethereum validators MUST NOT store consensus signing keys (BLS12-381 keys) on the same virtual instance as the network-exposed execution or consensus clients. Validators MUST utilize a dedicated, air-gapped Remote Signer sub-network or a Hardware Security Module (HSM) implementing EIP-3044 standards. The node requests signatures via encrypted RPC, preventing key exfiltration if the public endpoint is compromised via an unpatched zero-day.</t>
+  </section>
+  
+  <section title="Local Slashing Protection Synchronizer">
+    <t>To eliminate the risk of a "slashing event" (accidental double-signing of blocks which results in the destruction of staked Ethereum), a localized anti-slashing database MUST be replicated over the MPLS VPN mesh. Before an Embassy Node signs a block proposal on behalf of the pool's validator array, it MUST query the distributed database to confirm no other node has signed a conflicting block hash at that specific blockchain slot.</t>
+  </section>
+  
+  <section title="Mempool Shielding and Front-Running Mitigation">
+    <t>Public mempools expose institutional transactions to MEV bots that execute front-running or sandwich attacks, causing slippage and artificial cost hikes. Embassy Nodes MUST route all transaction blocks through private block production relays (e.g., Flashbots MEV-Boost) rather than standard public broadcasting. This ensures that data updates and settlement allocations pass directly to trusted mining pools, remaining invisible until they are mined into an immutable block.</t>
+  </section>
+</section>
 
-      <section title="Local Slashing Protection Synchronizer">
-        <t>To eliminate the risk of a "slashing event" (accidental double-signing of blocks which results in the destruction of staked Ethereum), a localized anti-slashing database MUST be replicated over the MPLS VPN mesh. Before an Embassy Node signs a block proposal on behalf of the pool's validator array, it MUST query the distributed database to confirm no other node has signed a conflicting block hash at that specific blockchain slot.</t>
-      </section>
+<section title="Embassy Node Validator Implementation and Institutional Guidelines">
+  <t>To ensure deterministic transaction inclusion, maximum protocol uptime, and absolute isolation from public network vulnerabilities, Embassy Nodes SHOULD implement a unified, vertically integrated validation and API routing stack.</t>
+  
+  <section title="Vertical Validator-API Integration Architecture">
+    <t>Traditional blockchain interactions rely on third-party RPC providers (e.g., Infura, Alchemy), which introduces latency and vector risks such as man-in-the-middle (MITM) attacks and MEV front-running. Each DeMI SRO National Embassy Node MUST operate its own execution client, consensus client, and an attached internal validator infrastructure.</t>
+    
+    <sourcecode type="mermaid"><![CDATA[
+graph TD
+    subgraph Perimeter [Embassy Node Secure Perimeter]
+        PE[Payment Engine] -- mTLS --> RPC[Private RPC / API Gate]
+        RPC -->|Internal Interlock| EE[Execution Engine Geth/Nethermind]
+        EE <--> CL[Consensus Layer Lighthouse]
+        
+        %% Вертикальная привязка к фундаменту внутри подложки
+        CL --> ETH[Ethereum L1 Public Network]
+        EE --- ETH
+    end
 
-      <section title="Mempool Shielding and Front-Running Mitigation">
-        <t>Public mempools expose institutional transactions to MEV bots that execute front-running or sandwich attacks, causing slippage and artificial cost hikes. Embassy Nodes MUST route all transaction blocks through private block production relays (e.g., Flashbots MEV-Boost) rather than standard public broadcasting. This ensures that data updates and settlement allocations pass directly to trusted mining pools, remaining invisible until they are mined into an immutable block.</t>
-      </section>
-    </section>
+    %% Стилизация высококонтрастных цветов (GitHub Dark High Contrast)
+    style Perimeter fill:#161b22,stroke:#444c56,stroke-width:2px,color:#ffffff
+    style PE fill:#21262d,stroke:#f0f6fc,stroke-width:1.5px,color:#ffffff
+    style RPC fill:#1c2128,stroke:#58a6ff,stroke-width:2px,color:#58a6ff
+    style EE fill:#21262d,stroke:#f0f6fc,stroke-width:1.5px,color:#ffffff
+    style CL fill:#21262d,stroke:#f0f6fc,stroke-width:1.5px,color:#ffffff
+    style ETH fill:#0d1117,stroke:#34d399,stroke-width:2.5px,color:#34d399
 
-    <section title="IANA Considerations" anchor="iana-considerations">
-      <t>This document requires no registry assignments or interventions from IANA.</t>
-    </section>
-  </middle>
+    %% Кастомизация стрелок для максимальной видимости и полной невидимости
+    linkStyle default stroke:#adbac7,stroke-width:2px;
+    linkStyle 0 stroke:#58a6ff,stroke-width:2px;
+    linkStyle 3 stroke:#34d399,stroke-width:2px;
+    linkStyle 4 stroke:#161b22,stroke-width:0px,opacity:0;
+    ]]></sourcecode>
+    
+    <ul>
+      <li><t><span style="strong">Direct Execution Interlock:</span> When the Web2 API gateway receives an Epoch Batch via <tt>POST /api/v1/epoch/submit</tt>, it MUST sign the transaction using the APP's institutional hot wallet and broadcast it directly to the node's local Execution Engine (Geth or Nethermind) via an internal IPC socket, completely bypassing the public internet.</t></li>
+      <li><t><span style="strong">Validator Priority Injection:</span> The local Consensus Client (Lighthouse or Prysm) MUST be configured to prioritize blocks containing transactions originated from the node's own private RPC endpoint. When the Embassy Node's validator is selected as the slot proposer on Ethereum L1, it MUST inject the queued DeMI SRO transactions at the top of the block execution payload, reducing inclusion latency to zero.</t></li>
+    </ul>
+  </section>
+  
+  <section title="Institutional Staking and Compliance Standards">
+    <t>Operating public-facing validators within an enterprise financial контур requires strict compliance with recent institutional blockchain frameworks. Embassy Nodes SHOULD adhere to the guidelines established by major institutional Ethereum initiatives and working groups focused on corporate node validation:</t>
+    
+    <ul>
+      <li><t><span style="strong">Enterprise Ethereum Alliance (EEA) Standards:</span> Node operators MUST implement the EEA Enterprise Architecture specifications regarding node access control, permissioned network routing over MPLS, and zero-knowledge evidence auditing for local central banks.</t></li>
+      <li><t><span style="strong">Institutional Liquid Staking &amp; Validator Frameworks:</span> For financial risk mitigation, nodes SHOULD utilize distributed validator technology (DVT) frameworks (such as Obol Network or SSV Network). DVT allows an Embassy Node's 32 ETH validation key to be split into multi-signature shares distributed securely between the sub-nodes of India, Pakistan, and Vietnam. This guarantees that if one physical data center goes offline, the remaining "embassies" can cooperatively sign blocks, preventing slashing penalties and maintaining continuous transaction ledgering.</t></li>
+      <li><t><span style="strong">Compliance and Sanction Filtering at the RPC Layer:</span> While the smart contract logic is immutable and extraterritorial ("Code is Law"), national Embassy Nodes MAY configure their private RPC layer to comply with local financial intelligence regulations (e.g., FIU-IND in India) by cross-referencing merchant wallet addresses against official local blocklists before broadcast.</t></li>
+    </ul>
+  </section>
+  
+  <section title="Automated GAS Fee Rebate Loop">
+    <t>As specified in the protocol economics, all gas rewards earned by the validator (specifically the Priority Fee and block tips via MEV-Boost) for processing DeMI batches MUST be programmatically funneled back to the smart contract's treasury.</t>
+    <t>The node handler script MUST monitor on-chain events and execute a quarterly rebalancing transaction, moving accumulated validation rewards from the validator's withdrawal address back into the <tt>DeMISROCompensationPool</tt> balance, thereby lowering the net operational costs of the alternative providers to near-zero levels.</t>
+  </section>
+</section>
 
-  <back>
-    <references title="Normative References">
-      <reference anchor="RFC2119" target="https://rfc-editor.org">
-        <front>
-          <title>Key words for use in RFCs to Indicate Requirement Levels</title>
-          <author initials="S." surname="Bradner" fullname="S. Bradner"/>
-          <date month="March" year="1997"/>
-        </front>
-        <seriesInfo name="BCP" value="14"/>
-        <seriesInfo name="RFC" value="2119"/>
-      </reference>
-      <reference anchor="RFC8174" target="https://rfc-editor.org">
-        <front>
-          <title>Ambiguity of Uppercase vs Lowercase in RFC 2119 Key Words</title>
-          <author initials="B." surname="Bing" fullname="B. Leiba"/>
-          <date month="May" year="2017"/>
-        </front>
-        <seriesInfo name="BCP" value="14"/>
-        <seriesInfo name="RFC" value="8174"/>
-      </reference>
-    </references>
-  </back>
+<section title="IANA Considerations" anchor="iana-considerations">
+  <t>This document requires no registry assignments or interventions from IANA.</t>
+</section>
+
+<back>
+  <references title="Normative References">
+    <reference anchor="RFC2119" target="https://www.rfc-editor.org/rfc/rfc2119">
+      <front>
+        <title>Key words for use in RFCs to Indicate Requirement Levels</title>
+        <author initials="S." surname="Bradner" fullname="S. Bradner"/>
+        <date month="March" year="1997"/>
+      </front>
+      <seriesInfo name="BCP" value="14"/>
+      <seriesInfo name="RFC" value="2119"/>
+    </reference>
+    <reference anchor="RFC7322" target="https://www.rfc-editor.org/rfc/rfc7322">
+      <front>
+        <title>RFC Style Guide</title>
+        <author initials="H." surname="Flanagan" fullname="H. Flanagan"/>
+        <author initials="G." surname="Brown" fullname="G. Brown"/>
+        <date month="September" year="2014"/>
+      </front>
+      <seriesInfo name="RFC" value="7322"/>
+    </reference>
+    <reference anchor="RFC8174" target="https://www.rfc-editor.org/rfc/rfc8174">
+      <front>
+        <title>Ambiguity of Uppercase vs Lowercase in RFC 2119 Key Words</title>
+        <author initials="B." surname="Leiba" fullname="B. Leiba"/>
+        <date month="May" year="2017"/>
+      </front>
+      <seriesInfo name="BCP" value="14"/>
+      <seriesInfo name="RFC" value="8174"/>
+    </reference>
+  </references>
+</back>
 </rfc>
           
