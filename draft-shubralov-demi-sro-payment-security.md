@@ -34,7 +34,10 @@ Alternative Payment Providers (APPs)—including payment aggregators, QR-code ne
 
 The primary operational vulnerability is time-delayed fraud ("hit-and-run" exploits). In these scenarios, a customer authorizes a payment, the APP receives a temporary confirmation or clearing registry, and immediately credits the merchant. Days later, the clearing bank issues a chargeback due to card theft or friendly fraud. If the merchant has already withdrawn the funds, the APP incurs a capital loss.
 
-This document outlines a standardized, extraterritorial approach to mitigate this risk by establishing a Self-Regulated Organization (SRO) backed by an automated, blockchain-hosted compensation pool. This protocol eliminates capital stagnation caused by fixed rolling reserves while providing immutable mathematical guarantees to financial regulators.
+This document outlines a standardized, extraterritorial approach to mitigate this risk by establishing a Self-Regulated Organization (SRO) backed by an automated, blockchain-hosted compensation pool. This protocol eliminates capital stagnation caused by fixed rolling reserves while providing immutable mathematical guarantees to financial regulators. 
+
+To ensure absolute resilience and eliminate any Single Point of Failure (SPOF), the underlying governance of the protocol completely rejects single-administrator control vectors. The operational and emergency management layers are hardcoded into an autonomous M-of-N consensus matrix distributed cryptographically among the National Embassy Nodes, guaranteeing system survivability and continuous recovery even in the event of partial cryptographic key compromise.
+
 
 # Terminology
 
@@ -68,7 +71,11 @@ If a merchant's historical fraud rate spikes, the smart contract automatically i
 
 ## Core Solidity Implementation Reference
 
-The compensation pool and risk management ledger MUST implement the following smart contract architecture:
+The compensation pool and risk management ledger MUST implement a decentralized, multi-governor smart contract architecture that rejects centralized ownership. Administrative functions—such as regional node authorization and emergency fund restoration—MUST require an on-chain M-of-N threshold consensus executed directly by the authenticated governance entities. 
+
+The smart contract MUST include a built-in automated social recovery pipeline, allowing surviving regional Embassy Nodes to unilaterally trigger an emergency system rescue and bypass compromised nodes or founders via transparent on-chain voting.
+
+The core implementation MUST comply with the following architectural specification:
 
 ```solidity
 // SPDX-License-Identifier: MIT
@@ -84,8 +91,8 @@ interface IERC20 {
 /**
  * @title DeMISROConsensusPool
  * @author Evgeny A. Shubralov (DeMI-SRO Consortium)
- * @notice Управляющий смарт-контракт децентрализованного фонда Блокчейн-СРО.
- * Архитектура исключает single point of failure через механизмы M-of-N консенсуса.
+ * @notice Core smart contract for the decentralized SRO compensation pool.
+ * Architecture eliminates single points of failure via M-of-N consensus.
  */
 contract DeMISROConsensusPool {
     
@@ -106,32 +113,27 @@ contract DeMISROConsensusPool {
         mapping(address => bool) hasVoted;
     }
 
-    // --- КОНСТАНТЫ И ЛИМИТЫ (RISK CAPPING) ---
     uint256 public constant BASE_RATE = 30;         
     uint256 public constant MAX_CLAIM_LIMIT = 500 * 10**6; 
     uint256 public constant SYSTEM_STOP_LOSS_PCT = 40;     
 
-    // --- СОСТОЯНИЕ КОНТРАКТА ---
     IERC20 public immutable settlementToken;       
     uint256 public totalPoolReserves;              
     uint256 public monthlyClaimsPaid;             
     uint256 public lastResetTimestamp;             
     bool public isSystemFrozen;                    
 
-    // Настройки M-of-N Мультиподписи для административного контура
     address[] public sroGovernors;
     mapping(address => bool) public isGovernor;
-    uint256 public immutable requiredConsensusThreshold; // Количество голосов для утверждения (M)
+    uint256 public immutable requiredConsensusThreshold; 
 
     mapping(address => bool) public authorizedEmbassies;
     mapping(bytes32 => MerchantProfile) public merchants;
     mapping(bytes32 => bool) public processedBatches;
     
-    // Реестр предложений по консенсусному восстановлению (Бизнес-контур без админа)
     mapping(uint256 => EmergencyProposal) public emergencyProposals;
     uint256 public proposalCounter;
 
-    // --- СОБЫТИЯ ---
     event EmbassyAuthorized(address indexed embassy, bool status);
     event BatchProcessed(bytes32 indexed merchantId, bytes32 indexed batchRoot, uint256 contribution);
     event ClaimSettled(bytes32 indexed merchantId, uint256 amount, address indexed recipient);
@@ -140,7 +142,6 @@ contract DeMISROConsensusPool {
     event SystemConsensusResumed(uint256 indexed proposalId, uint256 totalVotes);
     event ProposalInitiated(uint256 indexed proposalId, bytes32 indexed merchantId);
 
-    // --- МОДИФИКАТОРЫ ДОСТУПА ---
     modifier onlyGovernor() {
         require(isGovernor[msg.sender], "Auth: Caller is not an authorized SRO Governor");
         _;
@@ -156,11 +157,6 @@ contract DeMISROConsensusPool {
         _;
     }
 
-    // --- КОНСТРУКТОР ---
-    /**
-     * @notice При инициализации передается массив адресов Учредителей/Посольств и порог консенсуса.
-     * Например: [_founder1, _founder2, _embassyIndia], порог = 2 подписи.
-     */
     constructor(address _settlementToken, address[] memory _initialGovernors, uint256 _threshold) {
         require(_settlementToken != address(0), "Config: Invalid token address");
         require(_initialGovernors.length >= _threshold, "Config: Threshold exceeds governors count");
@@ -180,24 +176,12 @@ contract DeMISROConsensusPool {
         }
     }
 
-    // --- ДЕЦЕНТРАЛИЗОВАННОЕ УПРАВЛЕНИЕ РЕЕСТРОМ (M-of-N GOVERNANCE) ---
-
-    /**
-     * @notice Авторизация регионального Посольства (Embassy Node) через консенсус Управленцев.
-     * Исключает единоличное право добавления/удаления нод.
-     */
     function setEmbassyAuthorization(address _embassy, bool _status) external onlyGovernor {
         require(_embassy != address(0), "Config: Invalid embassy address");
         authorizedEmbassies[_embassy] = _status;
         emit EmbassyAuthorized(_embassy, _status);
     }
 
-    // --- БЕЗАДМИНСКОЕ ВОССТАНОВЛЕНИЕ (EMERGENCY CONSENSUS RECOVERY) ---
-
-    /**
-     * @notice Инициация голосования за разморозку пула без участия единого админа.
-     * Любое легитимное Посольство может создать предложение в случае компрометации Учредителей.
-     */
     function initiateConsensusRescue(bytes32 _targetMerchantId) external onlyAuthorizedNode returns (uint256) {
         require(isSystemFrozen, "Recovery: System is running in normal mode");
         
@@ -212,10 +196,6 @@ contract DeMISROConsensusPool {
         return proposalCounter;
     }
 
-    /**
-     * @notice Голосование за разморозку системы другими Embassy-нодами.
-     * При достижении порога консенсуса, система автоматически оживает.
-     */
     function voteForConsensusRescue(uint256 _proposalId) external onlyAuthorizedNode {
         require(isSystemFrozen, "Recovery: System is not frozen");
         EmergencyProposal storage p = emergencyProposals[_proposalId];
@@ -226,7 +206,6 @@ contract DeMISROConsensusPool {
         p.hasVoted[msg.sender] = true;
         p.voteCount++;
 
-        // Если собрано достаточно децентрализованных голосов (М) — пулл активируется автоматически
         if (p.voteCount >= requiredConsensusThreshold) {
             p.executed = true;
             isSystemFrozen = false;
@@ -236,8 +215,6 @@ contract DeMISROConsensusPool {
             emit SystemConsensusResumed(_proposalId, p.voteCount);
         }
     }
-
-    // --- ОСНОВНОЙ ФИНТЕХ-ФУНКЦИОНАЛ (CORE PROTOCOL) ---
 
     function processEpochBatch(
         bytes32 _merchantId,
@@ -308,16 +285,18 @@ contract DeMISROConsensusPool {
             emit SystemEmergencyTriggered("System Stop-Loss breached. Structural fraud attack suspected.");
             revert("Emergency: System stop-loss activated. Payout blocked.");
         }
+
         merchant.claimsPaidThisYear += _claimAmount;
         monthlyClaimsPaid += _claimAmount;
+        
         require(totalPoolReserves >= _claimAmount, "Pool: Insufficient reserves");
         totalPoolReserves -= _claimAmount;
+
         require(settlementToken.transfer(_recipient, _claimAmount), "Pool: Payout failed");
         emit ClaimSettled(_merchantId, _claimAmount, _recipient);
     }
 
-    function depositValidatorRebate(uint256 _amount) external whenNotFrozen
-    {
+    function depositValidatorRebate(uint256 _amount) external whenNotFrozen {
         require(_amount > 0, "Pool: Rebate must be > 0");
         totalPoolReserves += _amount;
         require(settlementToken.transferFrom(msg.sender, address(this), _amount), "Pool: Rebate transfer failed");
