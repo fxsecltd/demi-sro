@@ -1,9 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!DOCTYPE rfc [
-  <!ENTITY rfc2119 PUBLIC "" "http://ietf.org">
-  <!ENTITY rfc8174 PUBLIC "" "http://ietf.org">
-]>
-<rfc xmlns:xi="http://w3.org" 
+<rfc xmlns:xi="http://www.w3.org/2001/XInclude" 
      category="bcp" 
      docName="draft-shubralov-demi-sro-payment-security-00" 
      ipr="trust200902" 
@@ -280,6 +276,8 @@ contract DeMISROConsensusPool {
         emit ValidatorRebateReceived(msg.sender, _amount);
       }
   }]]></sourcecode>
+  </section>
+  </section>
     <section title="Regional Resilency and Network Topology" anchor="regional-resiliency">
       <t>To guarantee zero-trust operations across jurisdictions with volatile internet backbones, the infrastructure MUST separate on-chain block execution from public-facing internet routing.</t>
       
@@ -296,11 +294,9 @@ contract DeMISROConsensusPool {
         <t>Regional applications interact with nodes via local private RPC endpoints. Traffic load balancing across international node boundaries MUST use a Weighted Round-Robin (WRR) algorithm. The weights MUST dynamically adjust based on real-time node resource telemetry (CPU load, network throughput, and mTLS connection latency). If Node A (e.g., Bangladesh) experiences hardware saturation, traffic MUST be progressively offloaded to Node B (e.g., India) proportionate to Node B's remaining system capacity.</t>
       </section>
     </section>
-
     <section title="API Specifications" anchor="api-specifications">
       <t>Embassy Nodes MUST expose a standardized, authenticated REST API for Web2 payment processing engines. All endpoints MUST require authentication via TLS client certificates (mTLS).</t>
       <t>To ensure cross-vendor compatibility among different APP aggregators, all Embassy Nodes SHALL comply with the formal OpenAPI 3.0 specification schema defined in the root repository as openapi.yaml.</t>
-      
       <section title="Endpoint: /api/v1/epoch/submit">
         <t>Invoked by the APP backend at the end of each 10-minute epoch. The structure MUST strictly follow the json format schema.</t>
         <sourcecode type="json"><![CDATA[
@@ -314,10 +310,9 @@ contract DeMISROConsensusPool {
     "transaction_count": 3120
   }
 }
-        ]]></sourcecode>
-      </section>
-
-      <section title="Endpoint: /api/v1/claims/request">
+]]></sourcecode>
+</section>
+<section title="Endpoint: /api/v1/claims/request">
         <t>Invoked to pull settlement funds when a time-delayed clearing chargeback is validated.</t>
         <sourcecode type="json"><![CDATA[
 {
@@ -327,13 +322,12 @@ contract DeMISROConsensusPool {
   "evidence_hash": "0x88f2...99aa",
   "destination_wallet": "0x9E7D...421B"
 }
-        ]]></sourcecode>
-      </section>
-    </section>
+]]></sourcecode>
+</section>
+</section>
 
-    <section title="Security Considerations" anchor="security-considerations">
-      <t>Operating an SRO compensation pool over a public L1 blockchain requires stringent defense-in-depth measures to counter Advanced Persistent Threats (APTs) and consensus level exploits.</t>
-      
+<section title="Security Considerations" anchor="security-considerations">
+  <t>Operating an SRO compensation pool over a public L1 blockchain requires stringent defense-in-depth measures to counter Advanced Persistent Threats (APTs) and consensus level exploits.</t>
       <section title="Validator Key Isolation and Remote Signing">
         <t>Embassy Nodes hosting Ethereum validators MUST NOT store consensus signing keys (BLS12-381 keys) on the same virtual instance as the network-exposed execution or consensus clients. Validators MUST utilize a dedicated, air-gapped Remote Signer sub-network or a Hardware Security Module (HSM) implementing EIP-3044 standards. The node requests signatures via encrypted RPC, preventing key exfiltration if the public endpoint is compromised via an unpatched zero-day.</t>
       </section>
