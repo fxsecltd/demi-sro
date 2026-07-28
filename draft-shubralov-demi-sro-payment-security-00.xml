@@ -439,14 +439,6 @@ graph TD
         <seriesInfo name="BCP" value="14"/>
         <seriesInfo name="RFC" value="8174"/>
       </reference>
-      <reference anchor="RFC7322" target="https://www.rfc-editor.org/rfc/rfc7322">
-        <front>
-          <title>RFC Style Guide</title>
-          <author initials="H." surname="Flanagan" fullname="H. Flanagan"/>
-          <date month="September" year="2014"/>
-        </front>
-        <seriesInfo name="RFC" value="7322"/>
-      </reference>
     </references>
   </back>
 </rfc>
