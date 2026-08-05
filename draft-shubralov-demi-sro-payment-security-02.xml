@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <rfc xmlns:xi="http://www.w3.org/2001/XInclude"
      category="info"
-     docName="draft-shubralov-demi-sro-payment-security-01"
+     docName="draft-shubralov-demi-sro-payment-security-02"
      ipr="trust200902"
      submissionType="IETF"
      xml:lang="en"
@@ -20,7 +20,7 @@ value="draft-shubralov-demi-sro-payment-security-02"/>
 <uri>https://demi-sro.org</uri>
 </address>
 </author>
-<date year="2026" month="07" day="28"/>
+<date year="2026" month="08" day="05"/>
 <area>SEC</area>
 <workgroup>Independent</workgroup>
 <keyword>payment</keyword>
