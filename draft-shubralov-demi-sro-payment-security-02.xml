@@ -448,22 +448,57 @@ terminal). The edge router MUST automatically failover to the
 satellite channel within 500 milliseconds if the primary MPLS
 connection is dropped.</t>
 </section>
-<section title="Off-Chain Transaction Orchestration and 'Low-Tide' Market Dynamics" anchor="node-mev-orchestration">
-<t>To protect the SRO Compensation Fund from external market manipulation and geopolitical currency freezing without adding on-chain computation overhead, the entire economic balance layer is managed at the validation node level (Embassy Nodes).</t>
+<section title="Off-Chain Transaction Orchestration and
+'Low-Tide' Market Dynamics"
+anchor="node-mev-orchestration">
+<t>To protect the SRO Compensation Fund from external market
+manipulation and geopolitical currency freezing without adding
+on-chain computation overhead, the entire economic balance layer
+is managed at the validation node level (Embassy Nodes).</t>
 <section title="Atomic Block-Level Price Correction">
-<t>Embassy Nodes utilize their programmatic block-proposer privileges on Ethereum Layer 1 to enforce strict transaction ordering within a single block payload. When an Alternative Payment Provider (APP) submits its 10-minute epoch ledger, the host node bundles the following transactions into a single, indivisible atomic batch:</t>
+<t>Embassy Nodes utilize their programmatic block-proposer
+privileges on Ethereum Layer 1 to enforce strict transaction
+ordering within a single block payload. When an Alternative
+Payment Provider (APP) submits its 10-minute epoch ledger, the
+host node bundles the following transactions into a single,
+indivisible atomic batch:</t>
 <ol>
-<li><t>The node triggers a pre-execution correction by broadcasting high-priority internal sell orders, programmatically driving the market price of the SLF token down to its baseline deflationary floor price.</t></li>
-<li><t>In the exact same execution slot, the node inserts the fund purchase order, acquiring the required volume of SLF tokens for the compensation pool at the minimum engineered entry price.</t></li>
-<li><t>This cross-network interaction is executed entirely within a private transaction bundle (e.g., via MEV-Boost relays), ensuring that third-party front-running bots cannot intercept or sandwich the price correction vector.</t></li>
+<li><t>The node triggers a pre-execution correction by
+broadcasting high-priority internal sell orders,
+programmatically driving the market price of the SLF token down
+to its baseline deflationary floor price.</t></li>
+<li><t>In the exact same execution slot, the node inserts the
+fund purchase order, acquiring the required volume of SLF tokens
+for the compensation pool at the minimum engineered entry
+price.</t></li>
+<li><t>This cross-network interaction is executed entirely
+within a private transaction bundle (e.g., via MEV-Boost
+relays), ensuring that third-party front-running bots cannot
+intercept or sandwich the price correction vector.</t></li>
 </ol>
 </section>
-<section title="The Low-Tide Phase and Institutional Incentives">
-<t>Because the asset injection is tied to an immediate price drop orchestrated by the validating embassies, the token ecosystem experiences cyclical, highly predictable market phases designated as "Low-Tide Phases."</t>
-<t>During these intervals, the spot price of the SLF token matches the exact exit price guaranteed by the SRO rulesets. This transparency alters market participant behavior as follows:</t>
+<section title="The Low-Tide Phase and Institutional
+Incentives">
+<t>Because the asset injection is tied to an immediate price
+drop orchestrated by the validating embassies, the token
+ecosystem experiences cyclical, highly predictable market phases
+designated as "Low-Tide Phases."</t>
+<t>During these intervals, the spot price of the SLF token
+matches the exact exit price guaranteed by the SRO rulesets.
+This transparency alters market participant behavior as
+follows:</t>
 <ul>
-<li><t><span style="strong">Institutional Scalping:</span> High-frequency trading firms and market-makers can predict these phases based on public epoch timers. They are incentivized to provide deep secondary liquidity, purchasing tokens during the artificial drop to lock in a guaranteed profit spread upon standard retail redemption.</t></li>
-<li><t><span style="strong">Capital Preservation:</span> Since alternative providers buy into the pool strictly at the lowest engineered rate, the fund's net assets are immune to top-tier speculative bubbles, preventing under-collateralization when claims are settled.</t></li>
+<li><t><strong>Institutional Scalping:</strong> High-frequency
+trading firms and market-makers can predict these phases based
+on public epoch timers. They are incentivized to provide deep
+secondary liquidity, purchasing tokens during the artificial
+drop to lock in a guaranteed profit spread upon standard retail
+redemption.</t></li>
+<li><t><strong>Capital Preservation:</strong> Since alternative
+providers buy into the pool strictly at the lowest engineered
+rate, the fund's net assets are immune to top-tier speculative
+bubbles, preventing under-collateralization when claims are
+settled.</t></li>
 </ul>
 </section>
 </section>
